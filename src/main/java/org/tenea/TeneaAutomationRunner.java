@@ -15,6 +15,7 @@ public class TeneaAutomationRunner implements CommandLineRunner {
         System.out.println("=== TENEATOR API SERVER ===");
         System.out.println("POST /teneator/api/auth/login - Para autenticarse");
         System.out.println("POST /teneator/api/timelog - Para registrar entrada de tiempo");
+        System.out.println("POST /teneator/api/timeentries/list - Para obtener listado de imputaciones");
         System.out.println("GET /teneator/api/health - Health check");
     }
 }
