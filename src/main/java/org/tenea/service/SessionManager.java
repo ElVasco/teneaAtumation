@@ -21,10 +21,12 @@ import java.util.stream.Collectors;
 public class SessionManager {
 
     private final Map<String, SessionData> sessions = new HashMap<>();
-    private static final int SESSION_EXPIRATION_MINUTES = 60;
 
     @Value("${tenea.sessions.file.path:sessions.json}")
     private String sessionsFilePath;
+
+    @Value("${tenea.session.expiration.minutes:60}")
+    private int sessionExpirationMinutes;
 
     private final ObjectMapper objectMapper;
 
@@ -43,7 +45,7 @@ public class SessionManager {
 
                 for (SessionDataSerializable serialized : serializedSessions) {
                     SessionData sessionData = serialized.toSessionData();
-                    if (!sessionData.isExpired(SESSION_EXPIRATION_MINUTES)) {
+                    if (!sessionData.isExpired(sessionExpirationMinutes)) {
                         sessions.put(sessionData.getSessionId(), sessionData);
                         System.out.println("✅ Sesión cargada desde archivo: " + sessionData.getUsername());
                     }
@@ -80,7 +82,7 @@ public class SessionManager {
         if (session == null) {
             return Optional.empty();
         }
-        if (session.isExpired(SESSION_EXPIRATION_MINUTES)) {
+        if (session.isExpired(sessionExpirationMinutes)) {
             sessions.remove(sessionId);
             System.out.println("⏱️  Sesión expirada: " + sessionId);
             saveSessions(); // Save after removing expired session
@@ -91,7 +93,7 @@ public class SessionManager {
 
     public Optional<SessionData> getSessionByUsername(String username) {
         return sessions.values().stream()
-                .filter(session -> session.getUsername().equals(username) && !session.isExpired(SESSION_EXPIRATION_MINUTES))
+                .filter(session -> session.getUsername().equals(username) && !session.isExpired(sessionExpirationMinutes))
                 .findFirst();
     }
 
