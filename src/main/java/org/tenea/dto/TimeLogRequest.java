@@ -57,4 +57,3 @@ public class TimeLogRequest {
         this.ubicacion = ubicacion;
     }
 }
-

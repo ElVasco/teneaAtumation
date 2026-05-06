@@ -5,9 +5,7 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.jsoup.Jsoup;
@@ -29,6 +27,21 @@ public class HttpClientService {
     @Value("${tenea.base.url}")
     private String baseUrl;
 
+    @Value("${tenea.app.path}")
+    private String appPath;
+
+    @Value("${tenea.create.employee.path}")
+    private String createEmployeePath;
+
+    @Value("${tenea.insert.register.path}")
+    private String insertRegisterPath;
+
+    @Value("${tenea.list.employee.path}")
+    private String listEmployeePath;
+
+    @Value("${tenea.list.employee.referer}")
+    private String listEmployeeReferer;
+
     @Value("${tenea.user.agent}")
     private String userAgent;
 
@@ -37,7 +50,7 @@ public class HttpClientService {
                 .setDefaultCookieStore(cookieStore)
                 .setUserAgent(userAgent)
                 .build()) {
-            HttpGet getForm = new HttpGet(baseUrl + "/GestionAccesos-3.2.4/ControlAccesos/CreateEmployee");
+            HttpGet getForm = new HttpGet(baseUrl + "/" + appPath + createEmployeePath);
             getForm.setHeader("X-Requested-With", "XMLHttpRequest");
             String html = client.execute(getForm, r -> EntityUtils.toString(r.getEntity(), StandardCharsets.UTF_8));
             Matcher m = Pattern.compile("__RequestVerificationToken.*?value=\"([^\"]+)\"").matcher(html);
@@ -54,7 +67,7 @@ public class HttpClientService {
                 .setUserAgent(userAgent)
                 .build()) {
             String dt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS"));
-            org.apache.hc.core5.net.URIBuilder ub = new org.apache.hc.core5.net.URIBuilder(baseUrl + "/GestionAccesos-3.2.4/ControlAccesos/InsertRegisterAccess")
+            org.apache.hc.core5.net.URIBuilder ub = new org.apache.hc.core5.net.URIBuilder(baseUrl + "/" + appPath + insertRegisterPath)
                     .addParameter("punto_acceso", locationCode)
                     .addParameter("fecha_in", date)
                     .addParameter("hora_in", startTime)
@@ -65,7 +78,7 @@ public class HttpClientService {
             HttpGet req = new HttpGet(ub.build());
             req.setHeader("X-Requested-With", "XMLHttpRequest");
             req.setHeader("X-Request-Verification-Token", verificationToken);
-            req.setHeader("Referer", baseUrl + "/GestionAccesos-3.2.4/ControlAccesos/CreateEmployee");
+            req.setHeader("Referer", baseUrl + "/" + appPath + createEmployeePath);
 
             client.execute(req, r -> {
                 System.out.println("📅 " + date + " [" + startTime + "-" + endTime + "] -> Status: " + r.getCode());
@@ -101,26 +114,16 @@ public class HttpClientService {
             List<org.apache.hc.core5.http.NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("data", dataValue));
 
-            HttpPost req = new HttpPost(baseUrl + "/GestionAccesos-3.2.4/ControlAccesos/_ListEmployeenm_Partial");
+            HttpPost req = new HttpPost(baseUrl + "/" + appPath + listEmployeePath);
             req.setHeader("accept", "text/html, */*; q=0.01");
             req.setHeader("accept-language", "es-ES,es;q=0.9");
             req.setHeader("X-Requested-With", "XMLHttpRequest");
-            req.setHeader("Referer", baseUrl + "/GestionAccesos-3.2.4/ControlAccesos/ListEmployeenm");
+            req.setHeader("Referer", baseUrl + "/" + appPath + listEmployeeReferer);
 
             // Usar UrlEncodedFormEntity para encoding automático correcto
             req.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
 
-//            System.out.println("📤 Enviando POST con body:");
-//            System.out.println(req.toString());
-//            System.out.println(req.getEntity().getContent().toString());
-//            System.out.println(req.getEntity().getContentEncoding());
-//            System.out.println(params.toString());
-//            System.out.println(EntityUtils.toString(req.getEntity(), StandardCharsets.UTF_8));
-
             String html = client.execute(req, r -> EntityUtils.toString(r.getEntity(), StandardCharsets.UTF_8));
-
-//            System.out.println("📊 HTML recibido (primeros 1000 caracteres):");
-//            System.out.println(html.length() > 1000 ? html.substring(0, 1000) : html);
 
             Document doc = Jsoup.parse(html);
             List<org.tenea.dto.TimeEntryRecord> listado = new ArrayList<>();

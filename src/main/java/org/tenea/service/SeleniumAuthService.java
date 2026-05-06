@@ -19,6 +19,15 @@ public class SeleniumAuthService {
     @Value("${tenea.base.url}")
     private String baseUrl;
 
+    @Value("${tenea.app.path}")
+    private String appPath;
+
+    @Value("${tenea.login.path}")
+    private String loginPath;
+
+    @Value("${tenea.login.return.url}")
+    private String loginReturnUrl;
+
     @Value("${tenea.username:}")
     private String defaultUsername;
 
@@ -54,7 +63,7 @@ public class SeleniumAuthService {
         options.setCapability("se:cdp", false);
         options.setExperimentalOption("useAutomationExtension", false);
         options.setExperimentalOption("excludeSwitches", java.util.Arrays.asList("enable-automation"));
-        
+
         ChromeDriver driver = new ChromeDriver(options);
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
@@ -62,7 +71,7 @@ public class SeleniumAuthService {
 
         try {
             System.out.println("[*] Navegando a Tenea Talent...");
-            driver.get(baseUrl + "/GestionAccesos-3.2.4/base/Login?ReturnUrl=/GestionAccesos-3.2.4/ControlAccesos/CreateEmployee");
+            driver.get(baseUrl + "/" + appPath + loginPath + "?ReturnUrl=" + "/" + appPath + loginReturnUrl);
 
             wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input[type='text'], input[name='username']")));
             driver.findElement(By.cssSelector("input[type='text'], input[name='username']")).sendKeys(user);
@@ -90,4 +99,3 @@ public class SeleniumAuthService {
         }
     }
 }
-

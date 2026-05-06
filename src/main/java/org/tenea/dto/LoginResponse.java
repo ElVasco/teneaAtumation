@@ -35,4 +35,3 @@ public class LoginResponse {
         this.success = success;
     }
 }
-

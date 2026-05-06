@@ -35,4 +35,3 @@ public class TimeLogResponse {
         this.statusCode = statusCode;
     }
 }
-

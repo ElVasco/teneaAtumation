@@ -29,7 +29,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        System.out.println("🔐 Iniciando proceso de autenticación para usuario: " +
+        System.out.println(" Iniciando proceso de autenticación para usuario: " + 
                 (request != null && request.getUsername() != null ? request.getUsername() : "default"));
         try {
             // Obtener credenciales del request o usar null para usar valores por defecto
@@ -57,7 +57,7 @@ public class AuthController {
                 return ResponseEntity.ok(response);
             }
 
-            System.out.println("🆕 Creando nueva sesión para usuario: " + userToAuth);
+            System.out.println(" Creando nueva sesión para usuario: " + userToAuth);
             // Ejecutar autenticación con Selenium (usuario no tiene sesión previa)
             var cookieStore = seleniumAuthService.authenticate(username, password);
 
@@ -85,4 +85,3 @@ public class AuthController {
         }
     }
 }
-

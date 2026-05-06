@@ -19,6 +19,15 @@ public class SessionData {
         this.createdAt = LocalDateTime.now();
     }
 
+    // Constructor para restaurar sesiones desde persistencia
+    public SessionData(String sessionId, String username, BasicCookieStore cookieStore, String verificationToken, LocalDateTime createdAt) {
+        this.sessionId = sessionId;
+        this.username = username;
+        this.cookieStore = cookieStore;
+        this.verificationToken = verificationToken;
+        this.createdAt = createdAt;
+    }
+
     public String getSessionId() {
         return sessionId;
     }
