@@ -8,6 +8,8 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,6 +25,9 @@ import java.util.regex.Pattern;
 
 @Service
 public class HttpClientService {
+    private static final Logger logger = LogManager.getLogger(HttpClientService.class);
+
+    // ...existing code...
 
     @Value("${tenea.base.url}")
     private String baseUrl;
@@ -81,7 +86,7 @@ public class HttpClientService {
             req.setHeader("Referer", baseUrl + "/" + appPath + createEmployeePath);
 
             client.execute(req, r -> {
-                System.out.println("📅 " + date + " [" + startTime + "-" + endTime + "] -> Status: " + r.getCode());
+                logger.info("📅 " + date + " [" + startTime + "-" + endTime + "] -> Status: " + r.getCode());
                 return null;
             });
             Thread.sleep(300);
@@ -130,17 +135,17 @@ public class HttpClientService {
 
             // Selector corregido: Buscamos filas <tr> que tengan celdas <td>
             Elements filas = doc.select("table#grid tr:has(td)");
-            System.out.println("🔍 Filas encontradas: " + filas.size());
+            logger.debug("🔍 Filas encontradas: " + filas.size());
 
             // Si no encuentra con ese selector, intenta alternativas
             if (filas.size() == 0) {
-                System.out.println("⚠️ No se encontraron filas con 'table#grid tr:has(td)', intentando selectores alternativos...");
+                logger.warn("⚠️ No se encontraron filas con 'table#grid tr:has(td)', intentando selectores alternativos...");
                 filas = doc.select("table tr:has(td)");
-                System.out.println("   Filas con 'table tr:has(td)': " + filas.size());
+                logger.debug("   Filas con 'table tr:has(td)': " + filas.size());
 
                 if (filas.size() == 0) {
                     filas = doc.select("tr");
-                    System.out.println("   Total de <tr> en el HTML: " + filas.size());
+                    logger.debug("   Total de <tr> en el HTML: " + filas.size());
                 }
             }
 
@@ -152,12 +157,12 @@ public class HttpClientService {
                     celdas = fila.select("td");
                 }
 
-                System.out.println("📍 Fila " + i + ": " + celdas.size() + " celdas encontradas");
+                logger.debug("📍 Fila " + i + ": " + celdas.size() + " celdas encontradas");
 
                 if (celdas.size() >= 6) {
                     // El nombre del empleado está en la celda 5 (índice 5)
                     String empleado = celdas.get(5).select(".no-wrap").text();
-                    System.out.println("   👤 Empleado: " + empleado);
+                    logger.debug("   👤 Empleado: " + empleado);
 
                     // Bloque IN
                     Element divIn = celdas.get(1).select("div:has(.site-grid-IN)").first();
@@ -165,7 +170,7 @@ public class HttpClientService {
                         org.tenea.dto.TimeEntryRecord regIn = new org.tenea.dto.TimeEntryRecord();
                         String fullTextIn = divIn.select(".registro-manual").text();
 
-                        System.out.println("   ➡️ IN: " + fullTextIn);
+                        logger.debug("   ➡️ IN: " + fullTextIn);
 
                         if (!fullTextIn.isEmpty()) {
                             String[] partsIn = fullTextIn.split(" ");
@@ -185,7 +190,7 @@ public class HttpClientService {
                         org.tenea.dto.TimeEntryRecord regOut = new org.tenea.dto.TimeEntryRecord();
                         String fullTextOut = divOut.select(".registro-manual").text();
 
-                        System.out.println("   ⬅️ OUT: " + fullTextOut);
+                        logger.debug("   ⬅️ OUT: " + fullTextOut);
 
                         if (!fullTextOut.isEmpty()) {
                             String[] partsOut = fullTextOut.split(" ");
@@ -201,7 +206,7 @@ public class HttpClientService {
                 }
             }
 
-            System.out.println("✅ Total registros parseados: " + listado.size());
+            logger.info("✅ Total registros parseados: " + listado.size());
             return listado;
         }
     }

@@ -2,6 +2,8 @@ package org.tenea.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.tenea.model.SessionData;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class SessionManager {
+    private static final Logger logger = LogManager.getLogger(SessionManager.class);
 
     private final Map<String, SessionData> sessions = new HashMap<>();
 
@@ -47,13 +50,13 @@ public class SessionManager {
                     SessionData sessionData = serialized.toSessionData();
                     if (!sessionData.isExpired(sessionExpirationMinutes)) {
                         sessions.put(sessionData.getSessionId(), sessionData);
-                        System.out.println("✅ Sesión cargada desde archivo: " + sessionData.getUsername());
+                        logger.info("✅ Sesión cargada desde archivo: " + sessionData.getUsername());
                     }
                 }
-                System.out.println("📁 Sesiones cargadas desde " + sessionsFilePath + ": " + sessions.size());
+                logger.info("📁 Sesiones cargadas desde " + sessionsFilePath + ": " + sessions.size());
             }
         } catch (IOException e) {
-            System.err.println("⚠️ Error al cargar sesiones desde archivo: " + e.getMessage());
+            logger.warn("⚠️ Error al cargar sesiones desde archivo: " + e.getMessage());
         }
     }
 
@@ -65,15 +68,15 @@ public class SessionManager {
                 .collect(Collectors.toList());
 
             objectMapper.writeValue(new File(sessionsFilePath), serializedSessions);
-            System.out.println("💾 Sesiones guardadas en " + sessionsFilePath + ": " + serializedSessions.size());
+            logger.info("💾 Sesiones guardadas en " + sessionsFilePath + ": " + serializedSessions.size());
         } catch (IOException e) {
-            System.err.println("⚠️ Error al guardar sesiones en archivo: " + e.getMessage());
+            logger.warn("⚠️ Error al guardar sesiones en archivo: " + e.getMessage());
         }
     }
 
     public void storeSession(SessionData sessionData) {
         sessions.put(sessionData.getSessionId(), sessionData);
-        System.out.println("✅ Sesión almacenada para usuario: " + sessionData.getUsername() + " | UUID: " + sessionData.getSessionId());
+        logger.info("✅ Sesión almacenada para usuario: " + sessionData.getUsername() + " | UUID: " + sessionData.getSessionId());
         saveSessions(); // Save immediately after storing
     }
 
@@ -84,7 +87,7 @@ public class SessionManager {
         }
         if (session.isExpired(sessionExpirationMinutes)) {
             sessions.remove(sessionId);
-            System.out.println("⏱️  Sesión expirada: " + sessionId);
+            logger.info("⏱️  Sesión expirada: " + sessionId);
             saveSessions(); // Save after removing expired session
             return Optional.empty();
         }
@@ -99,7 +102,7 @@ public class SessionManager {
 
     public void removeSession(String sessionId) {
         sessions.remove(sessionId);
-        System.out.println("❌ Sesión removida: " + sessionId);
+        logger.info("❌ Sesión removida: " + sessionId);
         saveSessions(); // Save after removing
     }
 

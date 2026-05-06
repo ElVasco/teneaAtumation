@@ -1,5 +1,7 @@
 package org.tenea;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -9,13 +11,14 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class TeneaAutomationRunner implements CommandLineRunner {
+    private static final Logger logger = LogManager.getLogger(TeneaAutomationRunner.class);
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("=== TENEATOR API SERVER ===");
-        System.out.println("POST /teneator/api/auth/login - Para autenticarse");
-        System.out.println("POST /teneator/api/timelog - Para registrar entrada de tiempo");
-        System.out.println("POST /teneator/api/timeentries/list - Para obtener listado de imputaciones");
-        System.out.println("GET /teneator/api/health - Health check");
+        logger.info("=== TENEATOR API SERVER ===");
+        logger.info("POST /teneator/api/auth/login - Para autenticarse");
+        logger.info("POST /teneator/api/timelog - Para registrar entrada de tiempo");
+        logger.info("POST /teneator/api/timeentries/list - Para obtener listado de imputaciones");
+        logger.info("GET /teneator/api/health - Health check");
     }
 }

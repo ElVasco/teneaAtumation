@@ -3,6 +3,8 @@ package org.tenea.service;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -15,6 +17,9 @@ import java.time.Duration;
 
 @Service
 public class SeleniumAuthService {
+    private static final Logger logger = LogManager.getLogger(SeleniumAuthService.class);
+
+    // ...existing code...
 
     @Value("${tenea.base.url}")
     private String baseUrl;
@@ -45,7 +50,7 @@ public class SeleniumAuthService {
         // Setup ChromeDriver automatically
         WebDriverManager.chromedriver().setup();
 
-        System.out.println("[*] Iniciando motor Chrome (Headless)...");
+        logger.info("[*] Iniciando motor Chrome (Headless)...");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless");
         options.addArguments("--no-sandbox");
@@ -70,7 +75,7 @@ public class SeleniumAuthService {
         BasicCookieStore cookieStore = new BasicCookieStore();
 
         try {
-            System.out.println("[*] Navegando a Tenea Talent...");
+            logger.info("[*] Navegando a Tenea Talent...");
             driver.get(baseUrl + "/" + appPath + loginPath + "?ReturnUrl=" + "/" + appPath + loginReturnUrl);
 
             wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input[type='text'], input[name='username']")));
@@ -92,7 +97,7 @@ public class SeleniumAuthService {
             });
             return cookieStore;
         } catch (Exception e) {
-            System.err.println("❌ Error en Selenium: " + e.getMessage());
+            logger.error("❌ Error en Selenium: " + e.getMessage());
             throw new RuntimeException("Authentication failed", e);
         } finally {
             driver.quit();

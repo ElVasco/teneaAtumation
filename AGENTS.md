@@ -14,8 +14,8 @@ Key components:
 
 ## Authentication Pattern
 Uses headless Chrome to login at `https://schaefer.tenea.com/GestionAccesos-3.2.4/base/Login` with hardcoded credentials:
-- Username: `txomin.gutierrez`
-- Password: `P@r@l3l3p1p3d0.07`
+- Username: `ExampleUser`
+- Password: `Examplepassword123`
 
 Captures session cookies and `__RequestVerificationToken` from HTML for subsequent requests.
 

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration packages="org.apache.logging.log4j.core">
+    <Appenders>
+        <!-- Consola con colores y formato -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <!-- Archivo de logs -->
+        <RollingFile name="File" fileName="logs/teneator.log"
+                     filePattern="logs/teneator-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+
+        <!-- Archivo solo para errores -->
+        <RollingFile name="ErrorFile" fileName="logs/teneator-error.log"
+                     filePattern="logs/teneator-error-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- Logger para la aplicación TeneaAutomation -->
+        <Logger name="org.tenea" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+            <AppenderRef ref="ErrorFile"/>
+        </Logger>
+
+        <!-- Logger para Spring Framework -->
+        <Logger name="org.springframework" level="info"/>
+
+        <!-- Logger para Selenium -->
+        <Logger name="org.openqa.selenium" level="warn"/>
+
+        <!-- Logger para Apache HttpClient -->
+        <Logger name="org.apache.hc" level="warn"/>
+
+        <!-- Root Logger -->
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+            <AppenderRef ref="ErrorFile"/>
+        </Root>
+    </Loggers>
+</Configuration>
+
