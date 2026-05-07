@@ -17,6 +17,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,9 @@ public class HttpClientService {
 
     @Value("${tenea.insert.register.path}")
     private String insertRegisterPath;
+
+    @Value("${tenea.update.register.path}")
+    private String updateRegisterPath;
 
     @Value("${tenea.list.employee.path}")
     private String listEmployeePath;
@@ -90,6 +94,42 @@ public class HttpClientService {
                 return null;
             });
             Thread.sleep(300);
+        }
+    }
+
+    public int updateTimeEntry(BasicCookieStore cookieStore, String verificationToken, String id, String idRegistroEntrada,
+                               String idRegistroSalida, String startDate, String startTime, String endDate, String endTime,
+                               String locationCode, String observaciones, String ip) throws Exception {
+        try (CloseableHttpClient client = HttpClients.custom()
+                .setDefaultCookieStore(cookieStore)
+                .setUserAgent(userAgent)
+                .build()) {
+            String dt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS"));
+            org.apache.hc.core5.net.URIBuilder ub = new org.apache.hc.core5.net.URIBuilder(baseUrl + "/" + appPath + updateRegisterPath)
+                    .addParameter("id", id)
+                    .addParameter("id_registro_entrada", idRegistroEntrada)
+                    .addParameter("id_registro_salida", idRegistroSalida)
+                    .addParameter("punto_acceso", locationCode)
+                    .addParameter("fecha_in", startDate)
+                    .addParameter("hora_in", startTime)
+                    .addParameter("fecha_out", endDate)
+                    .addParameter("hora_out", endTime)
+                    .addParameter("observaciones", observaciones != null ? observaciones : "")
+                    .addParameter("create_local_dt", dt)
+                    .addParameter("ip", ip != null ? ip : "")
+                    .addParameter("_", String.valueOf(System.currentTimeMillis()));
+
+            HttpGet req = new HttpGet(ub.build());
+            req.setHeader("X-Requested-With", "XMLHttpRequest");
+            req.setHeader("X-Request-Verification-Token", verificationToken);
+            req.setHeader("Referer", baseUrl + "/" + appPath + createEmployeePath);
+
+            int statusCode = client.execute(req, r -> {
+                logger.info("Update " + startDate + " [" + startTime + "-" + endTime + "] -> Status: " + r.getCode());
+                return r.getCode();
+            });
+            Thread.sleep(300);
+            return statusCode;
         }
     }
 
@@ -160,48 +200,78 @@ public class HttpClientService {
                 logger.debug("📍 Fila " + i + ": " + celdas.size() + " celdas encontradas");
 
                 if (celdas.size() >= 6) {
+                    Element editLink = celdas.get(0).select("a[cmd-list-edit], a[title=Editar]").first();
+                    String editHref = editLink != null ? editLink.attr("href") : "";
+                    String id = extractEditEmployeeId(editHref);
+                    String idRegistroEntrada = extractHrefParameter(editHref, "id_registro_entrada");
+                    String idRegistroSalida = extractHrefParameter(editHref, "id_registro_salida");
+
                     // El nombre del empleado está en la celda 5 (índice 5)
                     String empleado = celdas.get(5).select(".no-wrap").text();
                     logger.debug("   👤 Empleado: " + empleado);
 
                     // Bloque IN
                     Element divIn = celdas.get(1).select("div:has(.site-grid-IN)").first();
+                    String fullTextIn = "";
                     if (divIn != null) {
                         org.tenea.dto.TimeEntryRecord regIn = new org.tenea.dto.TimeEntryRecord();
-                        String fullTextIn = divIn.select(".registro-manual").text();
+                        fullTextIn = divIn.select(".registro-manual").text();
 
                         logger.debug("   ➡️ IN: " + fullTextIn);
 
                         if (!fullTextIn.isEmpty()) {
                             String[] partsIn = fullTextIn.split(" ");
+                            regIn.setId(id);
+                            regIn.setIdRegistroEntrada(idRegistroEntrada);
+                            regIn.setIdRegistroSalida(idRegistroSalida);
+                            regIn.setEditHref(editHref);
                             regIn.setEmpleado(empleado);
                             regIn.setTipo("IN");
                             regIn.setFecha(partsIn.length > 0 ? partsIn[0] : "");
                             regIn.setHora(partsIn.length > 1 ? partsIn[1] : "");
                             regIn.setZona(celdas.get(2).select(".no-wrap").first() != null ?
                                     celdas.get(2).select(".no-wrap").first().text() : "");
-                            listado.add(regIn);
                         }
                     }
 
                     // Bloque OUT
                     Element divOut = celdas.get(1).select("div:has(.site-grid-OUT)").first();
+                    String fullTextOut = "";
                     if (divOut != null) {
                         org.tenea.dto.TimeEntryRecord regOut = new org.tenea.dto.TimeEntryRecord();
-                        String fullTextOut = divOut.select(".registro-manual").text();
+                        fullTextOut = divOut.select(".registro-manual").text();
 
                         logger.debug("   ⬅️ OUT: " + fullTextOut);
 
                         if (!fullTextOut.isEmpty()) {
                             String[] partsOut = fullTextOut.split(" ");
+                            regOut.setId(id);
+                            regOut.setIdRegistroEntrada(idRegistroEntrada);
+                            regOut.setIdRegistroSalida(idRegistroSalida);
+                            regOut.setEditHref(editHref);
                             regOut.setEmpleado(empleado);
                             regOut.setTipo("OUT");
                             regOut.setFecha(partsOut.length > 0 ? partsOut[0] : "");
                             regOut.setHora(partsOut.length > 1 ? partsOut[1] : "");
                             regOut.setZona(celdas.get(2).select(".no-wrap").last() != null ?
                                     celdas.get(2).select(".no-wrap").last().text() : "");
-                            listado.add(regOut);
                         }
+                    }
+
+                    if (!fullTextIn.isEmpty() || !fullTextOut.isEmpty()) {
+                        String[] partsIn = fullTextIn.split(" ");
+                        String[] partsOut = fullTextOut.split(" ");
+
+                        org.tenea.dto.TimeEntryRecord record = new org.tenea.dto.TimeEntryRecord();
+                        record.setId(id);
+                        record.setIdRegistroEntrada(idRegistroEntrada);
+                        record.setIdRegistroSalida(idRegistroSalida);
+                        record.setFecha(partsIn.length > 0 && !partsIn[0].isEmpty() ? partsIn[0] : (partsOut.length > 0 ? partsOut[0] : ""));
+                        record.setHoraIn(partsIn.length > 1 ? partsIn[1] : "");
+                        record.setHoraOut(partsOut.length > 1 ? partsOut[1] : "");
+                        record.setZona(celdas.get(2).select(".no-wrap").first() != null ?
+                                celdas.get(2).select(".no-wrap").first().text() : "");
+                        listado.add(record);
                     }
                 }
             }
@@ -209,5 +279,25 @@ public class HttpClientService {
             logger.info("✅ Total registros parseados: " + listado.size());
             return listado;
         }
+    }
+
+    private String extractEditEmployeeId(String href) {
+        if (href == null || href.isEmpty()) {
+            return "";
+        }
+        Matcher matcher = Pattern.compile("/EditEmployee/([^?]+)").matcher(href);
+        return matcher.find() ? matcher.group(1) : "";
+    }
+
+    private String extractHrefParameter(String href, String parameterName) throws Exception {
+        if (href == null || href.isEmpty()) {
+            return "";
+        }
+        String normalizedHref = href.replace("&amp;", "&");
+        Matcher matcher = Pattern.compile("[?&]" + Pattern.quote(parameterName) + "=([^&]+)").matcher(normalizedHref);
+        if (!matcher.find()) {
+            return "";
+        }
+        return URLDecoder.decode(matcher.group(1), StandardCharsets.UTF_8);
     }
 }

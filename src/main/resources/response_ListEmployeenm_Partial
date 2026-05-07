@@ -1,0 +1,344 @@
+<table class="table table-striped table-hover" id="grid">
+<input id="ddl_Empleado" name="ddl_Empleado" type="hidden" value="185" />            <tr>
+                <td class="vertical-align-middle">
+                        <a cmd-list-edit href="/GestionAccesos-3.2.4/ControlAccesos/EditEmployee/168489?id_registro_entrada=266591&amp;id_registro_salida=266592"
+                           title="Editar"><i class="fa fa-edit fa-lg align-img-and-text"></i></a>
+                </td>
+                <td class="vertical-align-middle">
+                            <div class="display-inline-flex margin-top-valido">
+                                <div class="in-out-text site-grid-INOUT site-grid-IN">IN</div>
+                                <div class="margin-left-table-img-text no-wrap align-img-and-text registro-manual">
+                                    27/04/2026 13:00
+                                </div>
+                                <div class="margin-left-table-img-text no-wrap align-img-and-text">
+
+                                </div>
+                            </div>
+                                            <br />
+                                            <div class="display-inline-flex margin-top-valido">
+                                                <div class="in-out-text site-grid-INOUT site-grid-OUT">OUT</div>
+                                                <div class="margin-left-table-img-text no-wrap align-img-and-text registro-manual">
+                                                    27/04/2026 16:00
+                                                </div>
+                                                <div class="margin-left-table-img-text no-wrap align-img-and-text">
+
+                                                </div>
+                                            </div>
+                </td>
+                <td class="vertical-align-middle">
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/sector_in.png" title="Zona Acceso entrada" /></div>
+                            <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                                OFICINA VIRTUAL
+                            </div>
+                        </div>
+                                        <br />
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/sector_out.png" title="Zona Acceso salida" /></div>
+                            <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                                OFICINA VIRTUAL
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text">
+                                <img class="" src="https://schaefer.tenea.com/CommonResources/images/door_in.png" title="Puerta entrada" />
+                            </div>
+                            <div class="margin-left-table-img-text align-img-and-text">
+                                TELETRABAJO
+                            </div>
+                        </div>
+                                        <br />
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text">
+                                <img class="" src="https://schaefer.tenea.com/CommonResources/images/door_out.png" title="Puerta salida" />
+                            </div>
+
+                            <div class="margin-left-table-img-text align-img-and-text">
+                                TELETRABAJO
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                                <div class="display-inline-flex">
+                                    <div class="margin-left-table-img-text">
+                                        <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_tarjeta1.png" title="Tarjeta" />
+                                    </div>
+                                    <div class="margin-left-table-img-text align-img-and-text">
+                                            0141 (T26)
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="display-inline-flex">
+                                    <div class="margin-left-table-img-text">
+                                        <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_tarjeta1.png" title="Tarjeta" />
+                                    </div>
+                                    <div class="margin-left-table-img-text align-img-and-text">
+                                            0141 (T26)
+                                    </div>
+                                </div>
+                </td>
+
+                <td>
+                    <div class="display-inline-flex">
+                        <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_profile.png" title="Empleado" /></div>
+                        <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                            Txomin Gutierrez (SSISCHAEFER)
+                        </div>
+                    </div>
+                    <br />
+                    <div class="display-inline-flex">
+                        <div class="margin-left-table-img-text">
+                            <img class="" src="https://schaefer.tenea.com/CommonResources/images/oficinas.png" title="Oficina" />
+                        </div>
+
+                        <div class="margin-left-table-img-text align-img-and-text">
+                            TELETRABAJO
+                        </div>
+                    </div>
+                </td>
+                <td>
+                        <div class="display-inline-flex margin-right-table-clock-minutes">
+                            <div class="font-size-clock"><img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_reloj.png" title="Tiempo" /></div>
+                            <div class="margin-left-table-img-text font-size-minutes align-clock-and-minutes">
+                                    <span>03:00</span>
+
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                    <div class="margin-valido">
+                            <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos_workflow_aprobado.png" title="Acceso correcto" />
+                    </div>
+                </td>
+
+            </tr>             <tr>
+                <td class="vertical-align-middle">
+                        <a cmd-list-edit href="/GestionAccesos-3.2.4/ControlAccesos/EditEmployee/168490?id_registro_entrada=266593&amp;id_registro_salida=266594"
+                           title="Editar"><i class="fa fa-edit fa-lg align-img-and-text"></i></a>
+                </td>
+                <td class="vertical-align-middle">
+                            <div class="display-inline-flex margin-top-valido">
+                                <div class="in-out-text site-grid-INOUT site-grid-IN">IN</div>
+                                <div class="margin-left-table-img-text no-wrap align-img-and-text registro-manual">
+                                    27/04/2026 08:00
+                                </div>
+                                <div class="margin-left-table-img-text no-wrap align-img-and-text">
+
+                                </div>
+                            </div>
+                                            <br />
+                                            <div class="display-inline-flex margin-top-valido">
+                                                <div class="in-out-text site-grid-INOUT site-grid-OUT">OUT</div>
+                                                <div class="margin-left-table-img-text no-wrap align-img-and-text registro-manual">
+                                                    27/04/2026 12:00
+                                                </div>
+                                                <div class="margin-left-table-img-text no-wrap align-img-and-text">
+
+                                                </div>
+                                            </div>
+                </td>
+                <td class="vertical-align-middle">
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/sector_in.png" title="Zona Acceso entrada" /></div>
+                            <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                                OFICINA VIRTUAL
+                            </div>
+                        </div>
+                                        <br />
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/sector_out.png" title="Zona Acceso salida" /></div>
+                            <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                                OFICINA VIRTUAL
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text">
+                                <img class="" src="https://schaefer.tenea.com/CommonResources/images/door_in.png" title="Puerta entrada" />
+                            </div>
+                            <div class="margin-left-table-img-text align-img-and-text">
+                                TELETRABAJO
+                            </div>
+                        </div>
+                                        <br />
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text">
+                                <img class="" src="https://schaefer.tenea.com/CommonResources/images/door_out.png" title="Puerta salida" />
+                            </div>
+
+                            <div class="margin-left-table-img-text align-img-and-text">
+                                TELETRABAJO
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                                <div class="display-inline-flex">
+                                    <div class="margin-left-table-img-text">
+                                        <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_tarjeta1.png" title="Tarjeta" />
+                                    </div>
+                                    <div class="margin-left-table-img-text align-img-and-text">
+                                            0141 (T26)
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="display-inline-flex">
+                                    <div class="margin-left-table-img-text">
+                                        <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_tarjeta1.png" title="Tarjeta" />
+                                    </div>
+                                    <div class="margin-left-table-img-text align-img-and-text">
+                                            0141 (T26)
+                                    </div>
+                                </div>
+                </td>
+
+                <td>
+                    <div class="display-inline-flex">
+                        <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_profile.png" title="Empleado" /></div>
+                        <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                            Txomin Gutierrez (SSISCHAEFER)
+                        </div>
+                    </div>
+                    <br />
+                    <div class="display-inline-flex">
+                        <div class="margin-left-table-img-text">
+                            <img class="" src="https://schaefer.tenea.com/CommonResources/images/oficinas.png" title="Oficina" />
+                        </div>
+
+                        <div class="margin-left-table-img-text align-img-and-text">
+                            TELETRABAJO
+                        </div>
+                    </div>
+                </td>
+                <td>
+                        <div class="display-inline-flex margin-right-table-clock-minutes">
+                            <div class="font-size-clock"><img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_reloj.png" title="Tiempo" /></div>
+                            <div class="margin-left-table-img-text font-size-minutes align-clock-and-minutes">
+                                    <span>04:00</span>
+
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                    <div class="margin-valido">
+                            <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos_workflow_aprobado.png" title="Acceso correcto" />
+                    </div>
+                </td>
+
+            </tr>             <tr>
+                <td class="vertical-align-middle">
+                        <a cmd-list-edit href="/GestionAccesos-3.2.4/ControlAccesos/EditEmployee/168487?id_registro_entrada=266588&amp;id_registro_salida=266589"
+                           title="Editar"><i class="fa fa-edit fa-lg align-img-and-text"></i></a>
+                </td>
+                <td class="vertical-align-middle">
+                            <div class="display-inline-flex margin-top-valido">
+                                <div class="in-out-text site-grid-INOUT site-grid-IN">IN</div>
+                                <div class="margin-left-table-img-text no-wrap align-img-and-text registro-manual">
+                                    27/04/2026 08:00
+                                </div>
+                                <div class="margin-left-table-img-text no-wrap align-img-and-text">
+
+                                </div>
+                            </div>
+                                            <br />
+                                            <div class="display-inline-flex margin-top-valido">
+                                                <div class="in-out-text site-grid-INOUT site-grid-OUT">OUT</div>
+                                                <div class="margin-left-table-img-text no-wrap align-img-and-text registro-manual">
+                                                    27/04/2026 09:00
+                                                </div>
+                                                <div class="margin-left-table-img-text no-wrap align-img-and-text">
+
+                                                </div>
+                                            </div>
+                </td>
+                <td class="vertical-align-middle">
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/sector_in.png" title="Zona Acceso entrada" /></div>
+                            <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                                OFICINA VIRTUAL
+                            </div>
+                        </div>
+                                        <br />
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/sector_out.png" title="Zona Acceso salida" /></div>
+                            <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                                OFICINA VIRTUAL
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text">
+                                <img class="" src="https://schaefer.tenea.com/CommonResources/images/door_in.png" title="Puerta entrada" />
+                            </div>
+                            <div class="margin-left-table-img-text align-img-and-text">
+                                TELETRABAJO
+                            </div>
+                        </div>
+                                        <br />
+                        <div class="display-inline-flex">
+                            <div class="margin-left-table-img-text">
+                                <img class="" src="https://schaefer.tenea.com/CommonResources/images/door_out.png" title="Puerta salida" />
+                            </div>
+
+                            <div class="margin-left-table-img-text align-img-and-text">
+                                TELETRABAJO
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                                <div class="display-inline-flex">
+                                    <div class="margin-left-table-img-text">
+                                        <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_tarjeta1.png" title="Tarjeta" />
+                                    </div>
+                                    <div class="margin-left-table-img-text align-img-and-text">
+                                            0141 (T26)
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="display-inline-flex">
+                                    <div class="margin-left-table-img-text">
+                                        <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_tarjeta1.png" title="Tarjeta" />
+                                    </div>
+                                    <div class="margin-left-table-img-text align-img-and-text">
+                                            0141 (T26)
+                                    </div>
+                                </div>
+                </td>
+
+                <td>
+                    <div class="display-inline-flex">
+                        <div class="margin-left-table-img-text"><img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_profile.png" title="Empleado" /></div>
+                        <div class="margin-left-table-img-text no-wrap align-img-and-text">
+                            Txomin Gutierrez (SSISCHAEFER)
+                        </div>
+                    </div>
+                    <br />
+                    <div class="display-inline-flex">
+                        <div class="margin-left-table-img-text">
+                            <img class="" src="https://schaefer.tenea.com/CommonResources/images/oficinas.png" title="Oficina" />
+                        </div>
+
+                        <div class="margin-left-table-img-text align-img-and-text">
+                            TELETRABAJO
+                        </div>
+                    </div>
+                </td>
+                <td>
+                        <div class="display-inline-flex margin-right-table-clock-minutes">
+                            <div class="font-size-clock"><img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos-30x30_workflow_reloj.png" title="Tiempo" /></div>
+                            <div class="margin-left-table-img-text font-size-minutes align-clock-and-minutes">
+                                    <span>01:00</span>
+
+                            </div>
+                        </div>
+                </td>
+                <td class="vertical-align-middle">
+                    <div class="margin-valido">
+                            <img class="" src="https://schaefer.tenea.com/CommonResources/images/iconos_workflow_aprobado.png" title="Acceso correcto" />
+                    </div>
+                </td>
+
+            </tr> </table>
