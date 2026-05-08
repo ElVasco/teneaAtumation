@@ -13,17 +13,19 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Service
 public class SessionManager {
     private static final Logger logger = LogManager.getLogger(SessionManager.class);
 
-    private final Map<String, SessionData> sessions = new HashMap<>();
+    private final Map<String, SessionData> sessions = new ConcurrentHashMap<>();
+    private final ReentrantLock persistenceLock = new ReentrantLock();
 
     @Value("${tenea.sessions.file.path:sessions.json}")
     private String sessionsFilePath;
@@ -40,73 +42,100 @@ public class SessionManager {
 
     @PostConstruct
     public void loadSessions() {
+        persistenceLock.lock();
         try {
             File file = new File(sessionsFilePath);
-            if (file.exists()) {
-                List<SessionDataSerializable> serializedSessions = objectMapper.readValue(file,
+            if (!file.exists()) {
+                return;
+            }
+
+            List<SessionDataSerializable> serializedSessions = objectMapper.readValue(file,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, SessionDataSerializable.class));
 
-                for (SessionDataSerializable serialized : serializedSessions) {
-                    SessionData sessionData = serialized.toSessionData();
-                    if (!sessionData.isExpired(sessionExpirationMinutes)) {
-                        sessions.put(sessionData.getSessionId(), sessionData);
-                        logger.info("✅ Sesión cargada desde archivo: " + sessionData.getUsername());
-                    }
+            for (SessionDataSerializable serialized : serializedSessions) {
+                SessionData sessionData = serialized.toSessionData();
+                if (!sessionData.isExpired(sessionExpirationMinutes)) {
+                    sessions.put(sessionData.getSessionId(), sessionData);
+                    logger.info("Sesion cargada desde archivo: " + sessionData.getUsername());
                 }
-                logger.info("📁 Sesiones cargadas desde " + sessionsFilePath + ": " + sessions.size());
             }
+            logger.info("Sesiones cargadas desde " + sessionsFilePath + ": " + sessions.size());
         } catch (IOException e) {
-            logger.warn("⚠️ Error al cargar sesiones desde archivo: " + e.getMessage());
+            logger.warn("Error al cargar sesiones desde archivo: " + e.getMessage());
+        } finally {
+            persistenceLock.unlock();
         }
     }
 
     @PreDestroy
     public void saveSessions() {
+        persistenceLock.lock();
         try {
             List<SessionDataSerializable> serializedSessions = sessions.values().stream()
-                .map(SessionDataSerializable::new)
-                .collect(Collectors.toList());
+                    .map(SessionDataSerializable::new)
+                    .collect(Collectors.toList());
 
             objectMapper.writeValue(new File(sessionsFilePath), serializedSessions);
-            logger.info("💾 Sesiones guardadas en " + sessionsFilePath + ": " + serializedSessions.size());
+            logger.info("Sesiones guardadas en " + sessionsFilePath + ": " + serializedSessions.size());
         } catch (IOException e) {
-            logger.warn("⚠️ Error al guardar sesiones en archivo: " + e.getMessage());
+            logger.warn("Error al guardar sesiones en archivo: " + e.getMessage());
+        } finally {
+            persistenceLock.unlock();
         }
     }
 
     public void storeSession(SessionData sessionData) {
         sessions.put(sessionData.getSessionId(), sessionData);
-        logger.info("✅ Sesión almacenada para usuario: " + sessionData.getUsername() + " | UUID: " + sessionData.getSessionId());
-        saveSessions(); // Save immediately after storing
+        logger.info("Sesion almacenada para usuario: " + sessionData.getUsername() + " | UUID: " + sessionData.getSessionId());
+        saveSessions();
     }
 
     public Optional<SessionData> getSession(String sessionId) {
+        if (sessionId == null) {
+            return Optional.empty();
+        }
+
         SessionData session = sessions.get(sessionId);
         if (session == null) {
             return Optional.empty();
         }
         if (session.isExpired(sessionExpirationMinutes)) {
             sessions.remove(sessionId);
-            logger.info("⏱️  Sesión expirada: " + sessionId);
-            saveSessions(); // Save after removing expired session
+            logger.info("Sesion expirada: " + sessionId);
+            saveSessions();
             return Optional.empty();
         }
+        session.touch();
+        saveSessions();
         return Optional.of(session);
     }
 
     public Optional<SessionData> getSessionByUsername(String username) {
-        return sessions.values().stream()
-                .filter(session -> session.getUsername().equals(username) && !session.isExpired(sessionExpirationMinutes))
+        if (username == null) {
+            return Optional.empty();
+        }
+
+        Optional<SessionData> sessionData = sessions.values().stream()
+                .filter(session -> username.equals(session.getUsername()) && !session.isExpired(sessionExpirationMinutes))
                 .findFirst();
+
+        sessionData.ifPresent(session -> {
+            session.touch();
+            saveSessions();
+        });
+
+        return sessionData;
     }
 
     public void removeSession(String sessionId) {
         sessions.remove(sessionId);
-        logger.info("❌ Sesión removida: " + sessionId);
-        saveSessions(); // Save after removing
+        logger.info("Sesion removida: " + sessionId);
+        saveSessions();
     }
 
     public int getActiveSessions() {
-        return sessions.size();
+        return (int) sessions.values().stream()
+                .filter(session -> !session.isExpired(sessionExpirationMinutes))
+                .count();
     }
 }

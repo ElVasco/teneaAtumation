@@ -11,8 +11,10 @@ import org.tenea.model.SessionData;
 import org.tenea.service.HttpClientService;
 import org.tenea.service.SessionManager;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @RestController
 @RequestMapping("/api/timeentries")
@@ -28,10 +30,23 @@ public class TimeEntryListController {
 
     @PostMapping("/list")
     public ResponseEntity<TimeEntryListResponse> getTimeEntryList(@RequestBody TimeEntryListRequest request) {
+        if (request == null || isBlank(request.getSession_id()) || isBlank(request.getFecha_desde()) || isBlank(request.getFecha_hasta())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new TimeEntryListResponse(false, "Campos requeridos: session_id, fecha_desde, fecha_hasta", null));
+        }
+
         System.out.println("📋 Solicitando listado de imputaciones para sesión: " + request.getSession_id());
 
         try {
             // Validar sesión (getSession retorna Optional)
+            DateTimeFormatter listDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate fechaDesde = LocalDate.parse(request.getFecha_desde(), listDateFormatter);
+            LocalDate fechaHasta = LocalDate.parse(request.getFecha_hasta(), listDateFormatter);
+            if (fechaHasta.isBefore(fechaDesde)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new TimeEntryListResponse(false, "fecha_hasta debe ser igual o posterior a fecha_desde", null));
+            }
+
             var sessionDataOptional = sessionManager.getSession(request.getSession_id());
             if (!sessionDataOptional.isPresent()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -56,6 +71,9 @@ public class TimeEntryListController {
                     records
             ));
 
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new TimeEntryListResponse(false, "Formato de fecha invalido. Use dd/MM/yyyy", null));
         } catch (Exception e) {
             System.err.println("❌ Error obteniendo listado: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -65,6 +83,15 @@ public class TimeEntryListController {
 
     @PostMapping("/update")
     public ResponseEntity<TimeLogResponse> updateTimeEntry(@RequestBody TimeEntryUpdateRequest request) {
+        if (request == null || isBlank(request.getSessionId()) || isBlank(request.getId())
+                || isBlank(request.getIdRegistroEntrada()) || isBlank(request.getIdRegistroSalida())
+                || isBlank(request.getDateTimeInicio()) || isBlank(request.getDateTimeFin())
+                || isBlank(request.getUbicacion())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    new TimeLogResponse(false, "Campos requeridos: session_id, id, id_registro_entrada, id_registro_salida, date_time_inicio, date_time_fin, ubicacion", 400)
+            );
+        }
+
         System.out.println("Actualizando imputacion con sessionId: " + request.getSessionId());
 
         try {
@@ -80,6 +107,11 @@ public class TimeEntryListController {
             DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm");
             LocalDateTime inicio = LocalDateTime.parse(request.getDateTimeInicio(), inputFormatter);
             LocalDateTime fin = LocalDateTime.parse(request.getDateTimeFin(), inputFormatter);
+            if (!fin.isAfter(inicio)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        new TimeLogResponse(false, "date_time_fin debe ser posterior a date_time_inicio", 400)
+                );
+            }
 
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm");
@@ -100,6 +132,9 @@ public class TimeEntryListController {
             );
 
             return ResponseEntity.ok(new TimeLogResponse(true, "Imputacion actualizada", statusCode));
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new TimeLogResponse(false, "Formato de fecha invalido. Use yyyy-MM-dd H:mm", 400));
         } catch (Exception e) {
             System.err.println("Error actualizando imputacion: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -120,5 +155,9 @@ public class TimeEntryListController {
             default:
                 return "26#1#1";
         }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

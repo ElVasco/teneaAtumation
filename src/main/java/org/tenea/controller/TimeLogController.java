@@ -11,6 +11,7 @@ import org.tenea.service.HttpClientService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 @RestController
@@ -27,6 +28,13 @@ public class TimeLogController {
 
     @PostMapping
     public ResponseEntity<TimeLogResponse> logTime(@RequestBody TimeLogRequest request) {
+        if (request == null || isBlank(request.getSessionId()) || isBlank(request.getDateTimeInicio())
+                || isBlank(request.getDateTimeFin()) || isBlank(request.getUbicacion())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    new TimeLogResponse(false, "Campos requeridos: session_id, date_time_inicio, date_time_fin, ubicacion", 400)
+            );
+        }
+
         System.out.println("📅 Recibida solicitud de logging con sessionId: " + request.getSessionId());
 
         try {
@@ -47,6 +55,11 @@ public class TimeLogController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
             LocalDateTime inicio = LocalDateTime.parse(request.getDateTimeInicio(), formatter);
             LocalDateTime fin = LocalDateTime.parse(request.getDateTimeFin(), formatter);
+            if (!fin.isAfter(inicio)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        new TimeLogResponse(false, "date_time_fin debe ser posterior a date_time_inicio", 400)
+                );
+            }
 
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -56,7 +69,7 @@ public class TimeLogController {
             String endTime = fin.format(timeFormatter);
 
             // Registrar entrada de tiempo
-            httpClientService.logTimeEntry(
+            int statusCode = httpClientService.logTimeEntry(
                     session.getCookieStore(),
                     session.getVerificationToken(),
                     date,
@@ -66,9 +79,13 @@ public class TimeLogController {
             );
 
             return ResponseEntity.ok(
-                    new TimeLogResponse(true, "✅ Entrada de tiempo registrada exitosamente", 200)
+                    new TimeLogResponse(true, "Entrada de tiempo registrada exitosamente", statusCode)
             );
 
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    new TimeLogResponse(false, "Formato de fecha invalido. Use yyyy-MM-dd HH:mm", 400)
+            );
         } catch (Exception e) {
             System.err.println("❌ Error al registrar entrada de tiempo: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
@@ -78,6 +95,9 @@ public class TimeLogController {
     }
 
     private String convertToLocationCode(String ubicacion) {
+        if (ubicacion == null) {
+            return "26#1#1";
+        }
         switch (ubicacion.toLowerCase()) {
             case "teletrabajo":
                 return "26#3#2";
@@ -87,6 +107,10 @@ public class TimeLogController {
             default:
                 return "26#1#1";
         }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }
 

@@ -70,7 +70,7 @@ public class HttpClientService {
         }
     }
 
-    public void logTimeEntry(BasicCookieStore cookieStore, String verificationToken, String date, String startTime, String endTime, String locationCode) throws Exception {
+    public int logTimeEntry(BasicCookieStore cookieStore, String verificationToken, String date, String startTime, String endTime, String locationCode) throws Exception {
         try (CloseableHttpClient client = HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
                 .setUserAgent(userAgent)
@@ -89,11 +89,16 @@ public class HttpClientService {
             req.setHeader("X-Request-Verification-Token", verificationToken);
             req.setHeader("Referer", baseUrl + "/" + appPath + createEmployeePath);
 
-            client.execute(req, r -> {
+            int statusCode = client.execute(req, r -> {
                 logger.info("📅 " + date + " [" + startTime + "-" + endTime + "] -> Status: " + r.getCode());
-                return null;
+                String responseBody = r.getEntity() != null ? EntityUtils.toString(r.getEntity(), StandardCharsets.UTF_8) : "";
+                if (r.getCode() < 200 || r.getCode() >= 300) {
+                    throw new RuntimeException("Tenea rejected time entry. Status: " + r.getCode() + " Body: " + responseBody);
+                }
+                return r.getCode();
             });
             Thread.sleep(300);
+            return statusCode;
         }
     }
 
@@ -126,6 +131,10 @@ public class HttpClientService {
 
             int statusCode = client.execute(req, r -> {
                 logger.info("Update " + startDate + " [" + startTime + "-" + endTime + "] -> Status: " + r.getCode());
+                String responseBody = r.getEntity() != null ? EntityUtils.toString(r.getEntity(), StandardCharsets.UTF_8) : "";
+                if (r.getCode() < 200 || r.getCode() >= 300) {
+                    throw new RuntimeException("Tenea rejected time entry update. Status: " + r.getCode() + " Body: " + responseBody);
+                }
                 return r.getCode();
             });
             Thread.sleep(300);
@@ -168,7 +177,13 @@ public class HttpClientService {
             // Usar UrlEncodedFormEntity para encoding automático correcto
             req.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
 
-            String html = client.execute(req, r -> EntityUtils.toString(r.getEntity(), StandardCharsets.UTF_8));
+            String html = client.execute(req, r -> {
+                String responseBody = r.getEntity() != null ? EntityUtils.toString(r.getEntity(), StandardCharsets.UTF_8) : "";
+                if (r.getCode() < 200 || r.getCode() >= 300) {
+                    throw new RuntimeException("Tenea rejected time entry list request. Status: " + r.getCode() + " Body: " + responseBody);
+                }
+                return responseBody;
+            });
 
             Document doc = Jsoup.parse(html);
             List<org.tenea.dto.TimeEntryRecord> listado = new ArrayList<>();
@@ -206,56 +221,24 @@ public class HttpClientService {
                     String idRegistroEntrada = extractHrefParameter(editHref, "id_registro_entrada");
                     String idRegistroSalida = extractHrefParameter(editHref, "id_registro_salida");
 
-                    // El nombre del empleado está en la celda 5 (índice 5)
-                    String empleado = celdas.get(5).select(".no-wrap").text();
-                    logger.debug("   👤 Empleado: " + empleado);
-
                     // Bloque IN
                     Element divIn = celdas.get(1).select("div:has(.site-grid-IN)").first();
                     String fullTextIn = "";
                     if (divIn != null) {
-                        org.tenea.dto.TimeEntryRecord regIn = new org.tenea.dto.TimeEntryRecord();
                         fullTextIn = divIn.select(".registro-manual").text();
 
                         logger.debug("   ➡️ IN: " + fullTextIn);
 
-                        if (!fullTextIn.isEmpty()) {
-                            String[] partsIn = fullTextIn.split(" ");
-                            regIn.setId(id);
-                            regIn.setIdRegistroEntrada(idRegistroEntrada);
-                            regIn.setIdRegistroSalida(idRegistroSalida);
-                            regIn.setEditHref(editHref);
-                            regIn.setEmpleado(empleado);
-                            regIn.setTipo("IN");
-                            regIn.setFecha(partsIn.length > 0 ? partsIn[0] : "");
-                            regIn.setHora(partsIn.length > 1 ? partsIn[1] : "");
-                            regIn.setZona(celdas.get(2).select(".no-wrap").first() != null ?
-                                    celdas.get(2).select(".no-wrap").first().text() : "");
-                        }
                     }
 
                     // Bloque OUT
                     Element divOut = celdas.get(1).select("div:has(.site-grid-OUT)").first();
                     String fullTextOut = "";
                     if (divOut != null) {
-                        org.tenea.dto.TimeEntryRecord regOut = new org.tenea.dto.TimeEntryRecord();
                         fullTextOut = divOut.select(".registro-manual").text();
 
                         logger.debug("   ⬅️ OUT: " + fullTextOut);
 
-                        if (!fullTextOut.isEmpty()) {
-                            String[] partsOut = fullTextOut.split(" ");
-                            regOut.setId(id);
-                            regOut.setIdRegistroEntrada(idRegistroEntrada);
-                            regOut.setIdRegistroSalida(idRegistroSalida);
-                            regOut.setEditHref(editHref);
-                            regOut.setEmpleado(empleado);
-                            regOut.setTipo("OUT");
-                            regOut.setFecha(partsOut.length > 0 ? partsOut[0] : "");
-                            regOut.setHora(partsOut.length > 1 ? partsOut[1] : "");
-                            regOut.setZona(celdas.get(2).select(".no-wrap").last() != null ?
-                                    celdas.get(2).select(".no-wrap").last().text() : "");
-                        }
                     }
 
                     if (!fullTextIn.isEmpty() || !fullTextOut.isEmpty()) {

@@ -28,6 +28,11 @@ public class SessionDataSerializable {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime createdAt;
 
+    @JsonProperty("lastAccessedAt")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    private LocalDateTime lastAccessedAt;
+
     @JsonProperty("cookies")
     private List<CookieData> cookies;
 
@@ -38,6 +43,7 @@ public class SessionDataSerializable {
         this.username = sessionData.getUsername();
         this.verificationToken = sessionData.getVerificationToken();
         this.createdAt = sessionData.getCreatedAt();
+        this.lastAccessedAt = sessionData.getLastAccessedAt();
 
         this.cookies = new ArrayList<>();
         if (sessionData.getCookieStore() != null) {
@@ -63,7 +69,7 @@ public class SessionDataSerializable {
             });
         }
 
-        return new SessionData(this.sessionId, this.username, cookieStore, this.verificationToken, this.createdAt);
+        return new SessionData(this.sessionId, this.username, cookieStore, this.verificationToken, this.createdAt, this.lastAccessedAt);
     }
 
     // Getters and setters
@@ -78,6 +84,9 @@ public class SessionDataSerializable {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getLastAccessedAt() { return lastAccessedAt; }
+    public void setLastAccessedAt(LocalDateTime lastAccessedAt) { this.lastAccessedAt = lastAccessedAt; }
 
     public List<CookieData> getCookies() { return cookies; }
     public void setCookies(List<CookieData> cookies) { this.cookies = cookies; }

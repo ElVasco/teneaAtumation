@@ -10,6 +10,7 @@ public class SessionData {
     private final String verificationToken;
     private final String username;
     private final LocalDateTime createdAt;
+    private LocalDateTime lastAccessedAt;
 
     public SessionData(String username, BasicCookieStore cookieStore, String verificationToken) {
         this.sessionId = UUID.randomUUID().toString();
@@ -17,15 +18,22 @@ public class SessionData {
         this.cookieStore = cookieStore;
         this.verificationToken = verificationToken;
         this.createdAt = LocalDateTime.now();
+        this.lastAccessedAt = this.createdAt;
     }
 
     // Constructor para restaurar sesiones desde persistencia
     public SessionData(String sessionId, String username, BasicCookieStore cookieStore, String verificationToken, LocalDateTime createdAt) {
+        this(sessionId, username, cookieStore, verificationToken, createdAt, createdAt);
+    }
+
+    public SessionData(String sessionId, String username, BasicCookieStore cookieStore, String verificationToken,
+                       LocalDateTime createdAt, LocalDateTime lastAccessedAt) {
         this.sessionId = sessionId;
         this.username = username;
         this.cookieStore = cookieStore;
         this.verificationToken = verificationToken;
         this.createdAt = createdAt;
+        this.lastAccessedAt = lastAccessedAt != null ? lastAccessedAt : createdAt;
     }
 
     public String getSessionId() {
@@ -48,7 +56,15 @@ public class SessionData {
         return createdAt;
     }
 
+    public LocalDateTime getLastAccessedAt() {
+        return lastAccessedAt;
+    }
+
+    public void touch() {
+        this.lastAccessedAt = LocalDateTime.now();
+    }
+
     public boolean isExpired(int expirationMinutes) {
-        return LocalDateTime.now().isAfter(createdAt.plusMinutes(expirationMinutes));
+        return LocalDateTime.now().isAfter(lastAccessedAt.plusMinutes(expirationMinutes));
     }
 }

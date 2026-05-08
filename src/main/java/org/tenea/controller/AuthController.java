@@ -28,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody(required = false) LoginRequest request) {
         System.out.println(" Iniciando proceso de autenticación para usuario: " + 
                 (request != null && request.getUsername() != null ? request.getUsername() : "default"));
         try {

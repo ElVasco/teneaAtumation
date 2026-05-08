@@ -28,6 +28,8 @@ public class HealthController {
         response.put("endpoints", new HashMap<String, String>() {{
             put("login", "POST /teneator/api/auth/login");
             put("timelog", "POST /teneator/api/timelog");
+            put("timeentries_list", "POST /teneator/api/timeentries/list");
+            put("timeentries_update", "POST /teneator/api/timeentries/update");
             put("health", "GET /teneator/api/health");
         }});
         return ResponseEntity.ok(response);
