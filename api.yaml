@@ -1,0 +1,425 @@
+openapi: 3.0.3
+info:
+  title: TeneaAutomation API
+  version: 1.0.0
+  description: API REST para autenticacion, consulta y registro de imputaciones en Tenea.
+servers:
+  - url: http://localhost:8080/teneator
+    description: Servidor local
+
+paths:
+  /api/auth/login:
+    post:
+      summary: Autenticar usuario
+      description: Crea una sesion nueva en Tenea o reutiliza una sesion activa existente.
+      operationId: login
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              withCredentials:
+                value:
+                  username: "usuario"
+                  password: "password"
+              defaultCredentials:
+                value: {}
+      responses:
+        "200":
+          description: Autenticacion correcta o sesion reutilizada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+              example:
+                sessionId: "550e8400-e29b-41d4-a716-446655440000"
+                message: "Autenticacion exitosa. Session ID generado."
+                success: true
+        "401":
+          description: Error de autenticacion.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+              example:
+                sessionId: null
+                message: "Error en autenticacion: Authentication failed"
+                success: false
+
+  /api/timelog:
+    post:
+      summary: Registrar imputacion
+      description: Inserta una imputacion nueva usando una sesion activa.
+      operationId: logTimeEntry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeLogRequest"
+            example:
+              session_id: "550e8400-e29b-41d4-a716-446655440000"
+              date_time_inicio: "2026-05-04 08:00"
+              date_time_fin: "2026-05-04 12:00"
+              ubicacion: "teletrabajo"
+      responses:
+        "200":
+          description: Imputacion registrada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+              example:
+                success: true
+                message: "Entrada de tiempo registrada exitosamente"
+                statusCode: 200
+        "401":
+          description: Sesion inexistente o expirada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+              example:
+                success: false
+                message: "Sesion no encontrada o expirada"
+                statusCode: 401
+        "500":
+          description: Error interno al registrar la imputacion.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /api/timeentries/list:
+    post:
+      summary: Listar imputaciones
+      description: Obtiene imputaciones de Tenea entre dos fechas y devuelve un registro por fila del listado HTML.
+      operationId: listTimeEntries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeEntryListRequest"
+            example:
+              session_id: "550e8400-e29b-41d4-a716-446655440000"
+              fecha_desde: "04/05/2026"
+              fecha_hasta: "04/05/2026"
+      responses:
+        "200":
+          description: Listado obtenido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntryListResponse"
+              example:
+                success: true
+                message: "Listado obtenido exitosamente (1 registros)"
+                records:
+                  - id: "168489"
+                    fecha: "04/05/2026"
+                    hora_IN: "14:00"
+                    hora_OUT: "17:00"
+                    id_registro_entrada: "266591"
+                    id_registro_salida: "266592"
+                    zona: "OFICINA VIRTUAL"
+        "401":
+          description: Sesion invalida o expirada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntryListResponse"
+              example:
+                success: false
+                message: "Sesion invalida o expirada"
+                records: null
+        "500":
+          description: Error interno al obtener el listado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntryListResponse"
+
+  /api/timeentries/update:
+    post:
+      summary: Actualizar imputacion
+      description: Actualiza una imputacion existente usando los ids obtenidos desde el listado.
+      operationId: updateTimeEntry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeEntryUpdateRequest"
+            example:
+              session_id: "550e8400-e29b-41d4-a716-446655440000"
+              id: "168489"
+              id_registro_entrada: "266591"
+              id_registro_salida: "266592"
+              date_time_inicio: "2026-05-04 14:00"
+              date_time_fin: "2026-05-04 17:00"
+              ubicacion: "teletrabajo"
+              observaciones: ""
+              ip: "217.111.221.75"
+      responses:
+        "200":
+          description: Imputacion actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+              example:
+                success: true
+                message: "Imputacion actualizada"
+                statusCode: 200
+        "401":
+          description: Sesion inexistente o expirada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+              example:
+                success: false
+                message: "Sesion no encontrada o expirada"
+                statusCode: 401
+        "500":
+          description: Error interno al actualizar la imputacion.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /api/health:
+    get:
+      summary: Estado del servicio
+      operationId: health
+      responses:
+        "200":
+          description: Estado del servidor API.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: "UP"
+                service: "TeneaAutomation API Server"
+                active_sessions: 1
+                endpoints:
+                  login: "POST /teneator/api/auth/login"
+                  timelog: "POST /teneator/api/timelog"
+                  timeentries_list: "POST /teneator/api/timeentries/list"
+                  timeentries_update: "POST /teneator/api/timeentries/update"
+                  health: "GET /teneator/api/health"
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        username:
+          type: string
+          description: Usuario de Tenea. Si se omite, se usan credenciales por defecto.
+          example: "usuario"
+        password:
+          type: string
+          format: password
+          description: Password de Tenea. Si se omite, se usan credenciales por defecto.
+          example: "password"
+
+    LoginResponse:
+      type: object
+      required:
+        - sessionId
+        - message
+        - success
+      properties:
+        sessionId:
+          type: string
+          nullable: true
+          description: UUID de sesion usado por los demas servicios.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        message:
+          type: string
+          example: "Autenticacion exitosa. Session ID generado."
+        success:
+          type: boolean
+          example: true
+
+    TimeLogRequest:
+      type: object
+      required:
+        - session_id
+        - date_time_inicio
+        - date_time_fin
+        - ubicacion
+      additionalProperties: false
+      properties:
+        session_id:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        date_time_inicio:
+          type: string
+          description: Fecha y hora de inicio en formato yyyy-MM-dd HH:mm.
+          example: "2026-05-04 08:00"
+        date_time_fin:
+          type: string
+          description: Fecha y hora de fin en formato yyyy-MM-dd HH:mm.
+          example: "2026-05-04 12:00"
+        ubicacion:
+          $ref: "#/components/schemas/Ubicacion"
+
+    TimeEntryListRequest:
+      type: object
+      required:
+        - session_id
+        - fecha_desde
+        - fecha_hasta
+      additionalProperties: false
+      properties:
+        session_id:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        fecha_desde:
+          type: string
+          description: Fecha inicial en formato dd/MM/yyyy.
+          example: "04/05/2026"
+        fecha_hasta:
+          type: string
+          description: Fecha final en formato dd/MM/yyyy.
+          example: "04/05/2026"
+
+    TimeEntryListResponse:
+      type: object
+      required:
+        - success
+        - message
+        - records
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Listado obtenido exitosamente (1 registros)"
+        records:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/TimeEntryRecord"
+
+    TimeEntryRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id principal extraido del href EditEmployee/{id}.
+          example: "168489"
+        fecha:
+          type: string
+          description: Fecha de la imputacion en formato dd/MM/yyyy.
+          example: "04/05/2026"
+        hora_IN:
+          type: string
+          description: Hora de entrada.
+          example: "14:00"
+        hora_OUT:
+          type: string
+          description: Hora de salida.
+          example: "17:00"
+        id_registro_entrada:
+          type: string
+          example: "266591"
+        id_registro_salida:
+          type: string
+          example: "266592"
+        zona:
+          type: string
+          example: "OFICINA VIRTUAL"
+
+    TimeEntryUpdateRequest:
+      type: object
+      required:
+        - session_id
+        - id
+        - id_registro_entrada
+        - id_registro_salida
+        - date_time_inicio
+        - date_time_fin
+        - ubicacion
+      additionalProperties: false
+      properties:
+        session_id:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        id:
+          type: string
+          example: "168489"
+        id_registro_entrada:
+          type: string
+          example: "266591"
+        id_registro_salida:
+          type: string
+          example: "266592"
+        date_time_inicio:
+          type: string
+          description: Fecha y hora de inicio en formato yyyy-MM-dd H:mm.
+          example: "2026-05-04 14:00"
+        date_time_fin:
+          type: string
+          description: Fecha y hora de fin en formato yyyy-MM-dd H:mm.
+          example: "2026-05-04 17:00"
+        ubicacion:
+          $ref: "#/components/schemas/Ubicacion"
+        observaciones:
+          type: string
+          example: ""
+        ip:
+          type: string
+          example: "217.111.221.75"
+
+    StatusResponse:
+      type: object
+      required:
+        - success
+        - message
+        - statusCode
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operacion realizada correctamente"
+        statusCode:
+          type: integer
+          format: int32
+          example: 200
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "UP"
+        service:
+          type: string
+          example: "TeneaAutomation API Server"
+        active_sessions:
+          type: integer
+          format: int32
+          example: 1
+        endpoints:
+          type: object
+          additionalProperties:
+            type: string
+
+    Ubicacion:
+      type: string
+      enum:
+        - oficina
+        - teletrabajo
+        - onsite
+      example: "teletrabajo"
