@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import org.tenea.model.SessionData;
 import org.tenea.model.SessionDataSerializable;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;

@@ -3,10 +3,7 @@ package org.tenea.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.tenea.dto.TimeEntryListRequest;
-import org.tenea.dto.TimeEntryListResponse;
-import org.tenea.dto.TimeEntryUpdateRequest;
-import org.tenea.dto.TimeLogResponse;
+import org.tenea.dto.*;
 import org.tenea.model.SessionData;
 import org.tenea.service.HttpClientService;
 import org.tenea.service.SessionManager;
@@ -102,7 +99,12 @@ public class TimeEntryListController {
             }
 
             SessionData sessionData = sessionDataOptional.get();
-            String locationCode = convertToLocationCode(request.getUbicacion());
+
+            // 2. LLAMADA DIRECTA AL SERVICIO (No al otro controlador)
+            UserInfoResponse userInfo = httpClientService.getUserInfo(
+                    sessionData.getCookieStore()
+            );
+            String locationCode = convertToLocationCode(userInfo.getIdVirtualCard(), request.getUbicacion());
 
             DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm");
             LocalDateTime inicio = LocalDateTime.parse(request.getDateTimeInicio(), inputFormatter);
@@ -142,18 +144,18 @@ public class TimeEntryListController {
         }
     }
 
-    private String convertToLocationCode(String ubicacion) {
+    private String convertToLocationCode(int idVirtualCard, String ubicacion) {
         if (ubicacion == null) {
-            return "26#1#1";
+            return idVirtualCard + "#1#1";
         }
         switch (ubicacion.toLowerCase()) {
             case "teletrabajo":
-                return "26#3#2";
+                return idVirtualCard + "#3#2";
             case "onsite":
-                return "26#4#4";
+                return idVirtualCard + "#4#4";
             case "oficina":
             default:
-                return "26#1#1";
+                return idVirtualCard + "#1#1";
         }
     }
 

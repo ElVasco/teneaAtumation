@@ -92,6 +92,82 @@ paths:
               schema:
                 $ref: "#/components/schemas/StatusResponse"
 
+  /api/timelog/userinfo:
+    get:
+      summary: Obtener info del usuario autenticado
+      description: Llama a la API de Tenea para obtener el id y el id_virtual_card del usuario asociado a la sesion activa.
+      operationId: getUserInfo
+      parameters:
+        - name: session_id
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        "200":
+          description: Info del usuario obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInfoResponse"
+              example:
+                id: 185
+                id_virtual_card: 26
+        "400":
+          description: Falta el parametro session_id.
+        "401":
+          description: Sesion inexistente o expirada.
+        "500":
+          description: Error interno al llamar a Tenea.
+
+  /api/timelog/batch:
+    post:
+      summary: Registrar imputaciones en lote
+      description: Inserta multiples imputaciones secuencialmente usando una sesion activa. Cada entrada se procesa de forma independiente; un fallo no detiene el resto.
+      operationId: logTimeEntryBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/TimeLogRequest"
+            example:
+              - session_id: "550e8400-e29b-41d4-a716-446655440000"
+                date_time_inicio: "2026-05-04 08:00"
+                date_time_fin: "2026-05-04 12:00"
+                ubicacion: "oficina"
+              - session_id: "550e8400-e29b-41d4-a716-446655440000"
+                date_time_inicio: "2026-05-05 09:00"
+                date_time_fin: "2026-05-05 17:00"
+                ubicacion: "teletrabajo"
+      responses:
+        "200":
+          description: Lote procesado. Revisar successCount y failedCount para conocer el resultado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchTimeLogResponse"
+              example:
+                totalEntries: 2
+                successCount: 2
+                failedCount: 0
+                results:
+                  - success: true
+                    message: "Entrada de tiempo registrada exitosamente"
+                    statusCode: 200
+                  - success: true
+                    message: "Entrada de tiempo registrada exitosamente"
+                    statusCode: 200
+        "400":
+          description: Lista vacia o nula.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchTimeLogResponse"
+
   /api/timeentries/list:
     post:
       summary: Listar imputaciones
@@ -209,6 +285,8 @@ paths:
                 endpoints:
                   login: "POST /teneator/api/auth/login"
                   timelog: "POST /teneator/api/timelog"
+                  timelog_batch: "POST /teneator/api/timelog/batch"
+                  timelog_userinfo: "GET /teneator/api/timelog/userinfo"
                   timeentries_list: "POST /teneator/api/timeentries/list"
                   timeentries_update: "POST /teneator/api/timeentries/update"
                   health: "GET /teneator/api/health"
@@ -380,6 +458,35 @@ components:
           type: string
           example: "217.111.221.75"
 
+    BatchTimeLogResponse:
+      type: object
+      required:
+        - totalEntries
+        - successCount
+        - failedCount
+        - results
+      properties:
+        totalEntries:
+          type: integer
+          format: int32
+          description: Total de entradas recibidas en el lote.
+          example: 2
+        successCount:
+          type: integer
+          format: int32
+          description: Numero de entradas registradas exitosamente.
+          example: 2
+        failedCount:
+          type: integer
+          format: int32
+          description: Numero de entradas que fallaron.
+          example: 0
+        results:
+          type: array
+          description: Resultado individual por cada entrada del lote, en el mismo orden.
+          items:
+            $ref: "#/components/schemas/StatusResponse"
+
     StatusResponse:
       type: object
       required:
@@ -415,6 +522,23 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    UserInfoResponse:
+      type: object
+      required:
+        - id
+        - id_virtual_card
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Id del usuario en Tenea.
+          example: 185
+        id_virtual_card:
+          type: integer
+          format: int32
+          description: Id de la tarjeta virtual asociada al usuario.
+          example: 26
 
     Ubicacion:
       type: string

@@ -1,5 +1,6 @@
 package org.tenea.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
@@ -53,6 +54,43 @@ public class HttpClientService {
 
     @Value("${tenea.user.agent}")
     private String userAgent;
+
+    @Value("${tenea.user.info.path}")
+    private String userInfoPath;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public org.tenea.dto.UserInfoResponse getUserInfo(BasicCookieStore cookieStore) throws Exception {
+        try (CloseableHttpClient client = HttpClients.custom()
+                .setDefaultCookieStore(cookieStore)
+                .setUserAgent(userAgent)
+                .build()) {
+            HttpGet req = new HttpGet(baseUrl + userInfoPath);
+            req.setHeader("X-Requested-With", "XMLHttpRequest");
+
+            req.setHeader("Authorization", "Bearer " + getCasteneaToken(cookieStore));
+
+            String json = client.execute(req, r -> {
+                String body = r.getEntity() != null ? EntityUtils.toString(r.getEntity(), StandardCharsets.UTF_8) : "";
+                if (r.getCode() < 200 || r.getCode() >= 300) {
+                    throw new RuntimeException("UserInfo request failed. Status: " + r.getCode() + " Body: " + body);
+                }
+                return body;
+            });
+
+            logger.info("UserInfo fetched successfully");
+            return objectMapper.readValue(json, org.tenea.dto.UserInfoResponse.class);
+        }
+    }
+
+    public String getCasteneaToken(BasicCookieStore cookieStore) {
+        // Obtenemos la lista de cookies del store
+        return cookieStore.getCookies().stream()
+                .filter(cookie -> "CASTenea".equals(cookie.getName()))
+                .map(org.apache.hc.client5.http.cookie.Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+    }
 
     public String extractVerificationToken(BasicCookieStore cookieStore) throws Exception {
         try (CloseableHttpClient client = HttpClients.custom()
@@ -252,8 +290,8 @@ public class HttpClientService {
                         record.setFecha(partsIn.length > 0 && !partsIn[0].isEmpty() ? partsIn[0] : (partsOut.length > 0 ? partsOut[0] : ""));
                         record.setHoraIn(partsIn.length > 1 ? partsIn[1] : "");
                         record.setHoraOut(partsOut.length > 1 ? partsOut[1] : "");
-                        record.setZona(celdas.get(2).select(".no-wrap").first() != null ?
-                                celdas.get(2).select(".no-wrap").first().text() : "");
+                        Element zonaElement = celdas.get(2).select(".no-wrap").first();
+                        record.setZona(convertToLocationName(zonaElement != null ? zonaElement.text() : null));
                         listado.add(record);
                     }
                 }
@@ -282,5 +320,20 @@ public class HttpClientService {
             return "";
         }
         return URLDecoder.decode(matcher.group(1), StandardCharsets.UTF_8);
+    }
+
+    private String convertToLocationName(String zona) {
+        if (zona == null) {
+            return "oficina";
+        }
+        switch (zona.toLowerCase()) {
+            case "oficina virtual":
+                return "teletrabajo";
+            case "on site":
+                return "onsite";
+            case "planta 1":
+            default:
+                return "oficina";
+        }
     }
 }
